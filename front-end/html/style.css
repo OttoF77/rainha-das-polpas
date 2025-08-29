@@ -1,0 +1,110 @@
+/* 
+  Paleta de Cores (baseada no arquivo Palette.txt)
+*/
+:root {
+    --harvest-gold: #dcb071;
+    --fruit-salad: #4b9142;
+    --asparagus: #889d5c;
+    --hippie-green: #6a8e50;
+    --fern: #5faf55;
+    --feijoa: #90e084;
+    --tussock: #d09458;
+    --fern-green: #477341;
+    
+    /* Cores principais do site */
+    --cor-primaria: var(--harvest-gold); /* Dourado colheita */
+    --cor-secundaria: var(--fruit-salad); /* Verde salada de frutas */
+    --cor-fundo: #FDFEFE; /* Branco levemente acinzentado */
+    --cor-texto: var(--fern-green); /* Verde samambaia escuro */
+    --cor-rodape: var(--hippie-green); /* Verde hippie */
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: var(--cor-texto);
+    background-color: var(--cor-fundo);
+    padding-top: 80px; /* Espaço para a navbar fixa */
+}
+
+/* --- Navbar --- */
+.navbar {
+    background-color: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s ease;
+}
+
+.navbar-brand {
+    font-weight: bold;
+    color: var(--cor-secundaria);
+}
+
+.nav-link {
+    color: var(--cor-texto);
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.nav-link:hover, .nav-link.active {
+    color: var(--cor-primaria);
+}
+
+/* --- Hero Section --- */
+.hero-section {
+    background: linear-gradient(rgba(75, 145, 66, 0.8), rgba(220, 176, 113, 0.8)), url('https://images.unsplash.com/photo-1610832958506-aa56368176cf?ixlib=rb-4.0.0&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8MHx8fA%3D%3D&auto=format&fit=crop&w=1920&q=80') no-repeat center center;    background-size: cover;
+    height: 70vh;
+    color: white;
+}
+
+/* --- Botões --- */
+.btn-primary {
+    background-color: var(--cor-primaria);
+    border-color: var(--cor-primaria);
+}
+
+.btn-primary:hover {
+    background-color: var(--tussock); /* Tom mais escuro da cor primária */
+    border-color: var(--tussock);
+}
+
+.btn-secondary {
+    background-color: var(--asparagus);
+    border-color: var(--asparagus);
+    color: white;
+}
+
+.btn-secondary:hover {
+    background-color: var(--hippie-green);
+    border-color: var(--hippie-green);
+}
+
+/* --- Cards de Produto --- */
+.product-card {
+    border: none;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    opacity: 0; /* Começa invisível para o efeito de fade-in */
+    transform: translateY(20px); /* Começa um pouco abaixo para o efeito */
+}
+
+.product-card.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+}
+
+/* --- Rodapé --- */
+footer {
+    background-color: var(--cor-rodape);
+}
+
+.social-icons a {
+    transition: opacity 0.3s ease;
+}
+.social-icons a:hover {
+    opacity: 0.8;
+}
