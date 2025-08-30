@@ -29,7 +29,7 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           # A pasta que contém o seu index.html e outros arquivos estáticos
-          path: ./front-end/html 
+          path: ./front-end 
 
   deploy:
     needs: build # Este job só roda depois que o job 'build' for concluído
