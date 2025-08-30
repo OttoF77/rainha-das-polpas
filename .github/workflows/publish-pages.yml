@@ -1,0 +1,48 @@
+name: Deploy Static Site to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main # Dispara o workflow sempre que houver um push no branch 'main'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout your repository content
+        uses: actions/checkout@v4
+
+      # Removi a etapa de Setup Node.js se não for usada para construção.
+      # Se você tiver ferramentas de build (ex: SASS, minificação JS), pode mantê-la.
+      # - name: Setup Node.js
+      #   uses: actions/setup-node@v4
+      #   with:
+      #     node-version: '18'
+
+      # Passo crucial: Preparar a estrutura do site para o deploy
+      - name: Prepare site for deployment
+        run: |
+          mkdir _site               # Cria um diretório temporário para o site deployado
+          cp -r front-end/html/* _site/ # Copia TUDO de 'html' para a raiz do '_site'
+          cp -r front-end/images _site/ # Copia a pasta 'images' para dentro do '_site'
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          # Agora, o artefato é o diretório temporário que preparamos
+          path: ./_site 
+
+  deploy:
+    needs: build # Este job só roda depois que o job 'build' for concluído
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    permissions:
+      pages: write      # Necessário para fazer o deploy para GitHub Pages
+      id-token: write   # Necessário para autenticação OpenID Connect
+      contents: read
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
