@@ -40,6 +40,7 @@ jobs:
     permissions:
       pages: write      # Necessário para fazer o deploy para GitHub Pages
       id-token: write   # Necessário para autenticação OpenID Connect
+      contents: read
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
