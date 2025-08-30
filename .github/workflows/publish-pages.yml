@@ -1,27 +1,46 @@
-name: Deploy to GitHub Pages
+name: Deploy Static Site to GitHub Pages
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main # Dispara o workflow sempre que houver um push no branch 'main'
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
-  permissions:
-    id-token: write
-    contents: read
     steps:
-      - name: Checkout repository
+      - name: Checkout your repository content
         uses: actions/checkout@v4
 
-      - name: Setup Pages
-        uses: actions/configure-pages@v4
+      - name: Setup Node.js (if you have build steps, e.g., for CSS preprocessors)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18' # Ou a versão do Node.js que você usa, se aplicável
 
-      - name: Upload front-end/html artifact
+      # Se o seu site precisar de alguma etapa de "construção" (ex: compilar SASS, minificar JS),
+      # você faria isso aqui. Para um site puramente estático, pode não ser necessário.
+      # Exemplo:
+      # - name: Build Static Site
+      #   run: |
+      #     npm install
+      #     npm run build # Supondo que você tenha um script 'build' no seu package.json
+
+      - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: front-end/html
+          # A pasta que contém o seu index.html e outros arquivos estáticos
+          path: ./front-end/html 
 
+  deploy:
+    needs: build # Este job só roda depois que o job 'build' for concluído
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    permissions:
+      pages: write      # Necessário para fazer o deploy para GitHub Pages
+      id-token: write   # Necessário para autenticação OpenID Connect
+    steps:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
