@@ -1,93 +1,58 @@
-```markdown
-# Sistema Web para Indústria de Polpas
+# Rainha das Polpas - Frontend Oficial
 
-## Sobre o Projeto
-Sistema web completo para gerenciamento de indústria de polpas, incluindo website com e-commerce e módulos administrativos.
+Website institucional e catálogo digital de polpas de frutas da **Rainha das Polpas**, desenvolvido com a tecnologia e design system da **Sysotto Softwares**.
 
-## Funcionalidades
+## 🚀 Tecnologias
 
-### Frontend
-- Website institucional
-- Loja virtual para venda de polpas
-- Catálogo de produtos
-- Carrinho de compras
-- Área do cliente
-- Sistema de pagamento integrado
+- **Framework**: Next.js 16 (App Router, Static Export Jamstack)
+- **UI & Estilização**: React 19, Tailwind CSS v4 (`@tailwindcss/postcss`)
+- **Linguagem**: TypeScript 5 (Strict Mode)
+- **Qualidade & Testes**: ESLint 9, Node Native Test Runner
+- **Pipeline Edge**: Cloudflare Pages via GitHub Actions
 
-### Backend
-- Controle de acesso e autenticação de usuários
-- Níveis de permissão (admin, vendedor, cliente)
-- Gestão de pedidos
-- Controle de estoque
-- Relatórios gerenciais
-- CRM (Customer Relationship Management)
-  - Cadastro de clientes
-  - Histórico de compras
-  - Segmentação
-  - Campanhas
-- Chatbot para atendimento automatizado
+## 🎨 Catálogo Oficial (13 Sabores)
 
-## Tecnologias Utilizadas
-- Frontend:
-  - React.js
-  - Next.js
-  - Material UI
-  - Redux
+1. Abacaxi (*Ananas comosus*)
+2. Acerola (*Malpighia emarginata*)
+3. Cajá (*Spondias mombin*)
+4. Caju (*Anacardium occidentale*)
+5. Goiaba (*Psidium guajava*)
+6. Graviola (*Annona muricata*)
+7. Manga (*Mangifera indica*)
+8. Mangaba (*Hancornia speciosa*)
+9. Maracujá (*Passiflora edulis*)
+10. Morango (*Fragaria x ananassa*)
+11. Seriguela (*Spondias purpurea*)
+12. Tamarindo (*Tamarindus indica*)
+13. Uva (*Vitis vinifera*)
 
-- Backend:
-  - Node.js
-  - Express
-  - MongoDB
-  - JWT Authentication
+## 📞 Canal de Atendimento
 
-## Instalação e Uso
+- **WhatsApp Oficial Exclusivo**: (88) 99709-9082
+- **Link Direto**: [Conversar no WhatsApp](https://wa.me/5588997099082)
+
+## 📦 Scripts Disponíveis
+
 ```bash
-# Clone o repositório
-git clone https://github.com/user/polpas-web-system
-
-# Instale as dependências
-cd polpas-web-system
+# Instalação das dependências
 npm install
 
-# Inicie o servidor de desenvolvimento
+# Execução em ambiente de desenvolvimento
 npm run dev
-arkdown
-# Sistema Web para Indústria de Polpas
 
-## Sobre o Projeto
-Sistema web completo para gerenciamento de indústria de polpas, incluindo website com e-commerce e módulos administrativos.
+# Verificação estática de tipos
+npm run typecheck
 
-## Funcionalidades
+# Lint de código
+npm run lint
 
-### Frontend
-- Website institucional
-- Loja virtual para venda de polpas
-- Catálogo de produtos
-- Carrinho de compras
-- Área do cliente
-- Sistema de pagamento integrado
+# Execução dos testes unitários
+npm test
 
-### Backend
-- Controle de acesso e autenticação de usuários
-- Níveis de permissão (admin, vendedor, cliente)
-- Gestão de pedidos
-- Controle de estoque
-- Relatórios gerenciais
-- CRM (Customer Relationship Management)
-  - Cadastro de clientes
-  - Histórico de compras
-  - Segmentação
-  - Campanhas
-- Chatbot para atendimento automatizado
+# Build estático para produção (Cloudflare Pages)
+npm run build
+```
 
-## Tecnologias Utilizadas
-- Frontend:
-  - Bootstrap 5.3.3
-  - HTML
-  - CSS
+## 🛡️ Conformidade & Copyright
 
-- Backend:
-  - Python
-  - Django  
-
-
+© 2026 Rainha das Polpas. Todos os direitos reservados. Desenvolvido por [Sysotto Softwares](https://sysotto.com).
