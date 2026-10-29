@@ -8,7 +8,7 @@ Website institucional e catálogo digital de polpas de frutas da **Rainha das Po
 - **UI & Estilização**: React 19, Tailwind CSS v4 (`@tailwindcss/postcss`)
 - **Linguagem**: TypeScript 5 (Strict Mode)
 - **Qualidade & Testes**: ESLint 9, Node Native Test Runner
-- **Pipeline Edge**: Cloudflare Pages via GitHub Actions
+- **CI**: GitHub Actions para validar código e gerar artefato estático
 
 ## 🎨 Catálogo Oficial (13 Sabores)
 
@@ -49,8 +49,24 @@ npm run lint
 # Execução dos testes unitários
 npm test
 
-# Build estático para produção (Cloudflare Pages)
+# Build estático para revisão e integração
 npm run build
+```
+
+## Publicação na Sysotto
+
+O endereço público previsto é `https://sites.sysotto.com/rainhadaspolpas/`, conforme o ADR 002 da Sysotto (emenda de 31/08/2026). Sites de inquilinos usam caminhos sob `sites.sysotto.com`, com resolução do slug pelo publicador compartilhado.
+
+Este repositório mantém o frontend independente e seu artefato de revisão. O workflow executa TypeScript, lint, testes e build com `NEXT_PUBLIC_BASE_PATH=/rainhadaspolpas`; o artefato `static-out` não é publicado automaticamente. O sucesso da CI não confirma publicação nem integração com o SiteBuilder.
+
+A disponibilização em produção depende de cadastrar o site e seu slug no publicador Sysotto, validar os entitlements e integrar o layout/conteúdo ao fluxo compartilhado de publicação. Essa integração ainda não está implementada neste repositório.
+
+Não são necessários secrets `CLOUDFLARE_API_TOKEN` ou `CLOUDFLARE_ACCOUNT_ID` neste repositório para essa CI. Não associe `sites.sysotto.com` a um projeto Pages exclusivo deste cliente: o host é compartilhado pelos sites dos inquilinos. DNS, TLS, autenticação e roteamento permanecem sob a infraestrutura central da Sysotto.
+
+Para reproduzir o build de revisão:
+
+```bash
+NEXT_PUBLIC_SITE_URL=https://sites.sysotto.com/rainhadaspolpas NEXT_PUBLIC_BASE_PATH=/rainhadaspolpas npm run build
 ```
 
 ## 🛡️ Conformidade & Copyright
