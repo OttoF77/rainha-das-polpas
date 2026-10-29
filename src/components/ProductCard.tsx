@@ -9,7 +9,7 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product, onSelect, onAddToCart }: ProductCardProps) {
-  const formattedPrice = product.precoUnitario
+  const formattedPrice = product.precoUnitario !== undefined
     ? new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(product.precoUnitario)
     : "Sob consulta";
 
@@ -21,12 +21,12 @@ export function ProductCard({ product, onSelect, onAddToCart }: ProductCardProps
           src={getAssetPath(product.imagemTemporaria)}
           alt={product.nome}
           fill
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
           className="object-cover group-hover:scale-105 transition-transform duration-500"
         />
         <div className="absolute top-3 left-3 flex flex-wrap gap-1.5">
           <span className="inline-block bg-white/95 backdrop-blur-xs text-fruit-salad font-bold text-xs px-2.5 py-1 rounded-full shadow-xs border border-emerald-100">
-            100% Natural
+            100% Polpa
           </span>
           {product.tags.includes("Tesouro Regional") && (
             <span className="inline-block bg-harvest-gold text-sysotto-navy-dark font-bold text-xs px-2.5 py-1 rounded-full shadow-xs">
@@ -72,7 +72,7 @@ export function ProductCard({ product, onSelect, onAddToCart }: ProductCardProps
               className="w-full inline-flex items-center justify-center px-3 py-2.5 rounded-xl text-xs font-semibold text-sysotto-navy-dark bg-gray-100 hover:bg-gray-200 transition-colors touch-target focus:outline-hidden focus:ring-2 focus:ring-fruit-salad"
               aria-label={`Ver benefícios nutricionais de ${product.nome}`}
             >
-              Benefícios
+              Ver Detalhes
             </button>
 
             {onAddToCart ? (

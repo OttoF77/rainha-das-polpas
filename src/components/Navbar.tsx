@@ -99,7 +99,7 @@ export function Navbar({ cartCount = 0, onOpenCart }: NavbarProps) {
                 />
               </svg>
               {cartCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-fruit-salad text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center shadow-xs">
+                <span key={cartCount} className="cart-badge absolute -top-1 -right-1 bg-fruit-salad text-white text-xs font-bold min-w-5 px-1 h-5 rounded-full flex items-center justify-center shadow-xs">
                   {cartCount}
                 </span>
               )}
