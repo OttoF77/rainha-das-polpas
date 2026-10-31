@@ -8,10 +8,10 @@ Este documento registra exclusivamente os fatos comprovados por testes automatiz
 
 ## 1. Resumo Executivo da Homologação
 
-- **Total de Requisitos Normativos**: 10
-- **Requisitos Conformes (`conforme`)**: 10 (100%)
+- **Total de Requisitos Normativos**: 11
+- **Requisitos Conformes (`conforme`)**: 11 (100%)
 - **Requisitos Parciais / Não Conformes**: 0
-- **Suíte de Testes Automatizados**: 29 testes unitários e de integração + testes E2E aprovados (100% pass).
+- **Suíte de Testes Automatizados**: 38 testes unitários e de integração + 12 testes E2E Playwright aprovados (100% pass).
 - **TypeScript & Linting**: 0 erros, 0 avisos.
 - **Exportação Estática (SSG)**: Homologada em `out/` com build Turbopack do Next.js 16.
 
@@ -31,6 +31,7 @@ Este documento registra exclusivamente os fatos comprovados por testes automatiz
 | **RP-008** | Botão Flutuante e Acessibilidade | `conforme` | `tests/whatsapp.test.ts` (suporte a `prefers-reduced-motion`, ocultação automática inteligente sob modais/drawer abertos). |
 | **RP-009** | Integração Sysotto por Slug/Host (Sem `X-Tenant-Id`) | `conforme` | `tests/sysotto-api.test.ts` (proibição de `X-Tenant-Id`, resolução por `siteSlug`, timeout de 3.000 ms, fail-closed na escrita). |
 | **RP-010** | Compatibilidade Jamstack com `IndustryCatalog_V1` | `conforme` | `tests/sysotto-api.test.ts` (merge de dados remotos canônicos com metadados locais de `products.ts`, fallback imediato sem backend). |
+| **RP-011** | Precificação Regional por Estado (UF) Exclusiva no Carrinho | `conforme` | `tests/regional-pricing.test.ts`, `tests/storefront.test.tsx`, `e2e/order-flow.spec.ts` (preços ausentes na vitrine/modal; exibição exclusiva pós-login com tabelas CE/SP/PI; invalidação no logout; sem `X-Tenant-Id`). |
 
 ---
 

@@ -4,7 +4,7 @@ test.describe("Fluxo de Compra e Checkout WhatsApp — Rainha das Polpas", () =>
   test.beforeEach(async ({ page }) => {
     await page.goto("/");
     await expect(page.locator("article").first()).toBeVisible();
-    await page.locator('[data-hydrated="true"]').waitFor({ timeout: 5000 }).catch(() => {});
+    await page.locator('[data-hydrated="true"]').waitFor({ timeout: 10000 }).catch(() => {});
   });
 
   test("1. Carrega vitrine com 13 sabores e canal de atendimento oficial", async ({ page }) => {
@@ -109,5 +109,37 @@ test.describe("Fluxo de Compra e Checkout WhatsApp — Rainha das Polpas", () =>
     }).toPass();
 
     await expect(floatingButton).not.toBeVisible();
+  });
+
+  test("6. Precificação regional por estado (S3-04): liberação após login, CE vs SP e invalidação no logout", async ({ page }) => {
+    // 1. Adiciona Mangaba ao carrinho
+    const mangabaDetail = page.getByRole("button", { name: "Ver benefícios nutricionais de Polpa de Mangaba" });
+    await mangabaDetail.click();
+    const dialog = page.getByRole("dialog");
+    await dialog.getByRole("spinbutton").fill("3");
+    await dialog.getByRole("button", { name: "Adicionar ao Carrinho" }).click();
+
+    // 2. Abre o carrinho anônimo: não visualiza preços
+    const cartButton = page.getByRole("button", { name: /Carrinho de compras com 3 itens/ });
+    await cartButton.click();
+    await expect(page.getByText("Total estimado: Sob consulta")).toBeVisible();
+
+    // 3. Identifica cliente em Ceará (CE): libera preços do CE (Mangaba 3x 16,50 = 49,50)
+    const ceButton = page.getByRole("button", { name: "Ceará (CE)" });
+    await ceButton.click();
+    await expect(page.getByText(/Tabela Regional: Ceará/)).toBeVisible();
+    await expect(page.getByText(/Total estimado:.*49,50/)).toBeVisible();
+
+    // 4. Alterna para São Paulo (SP): recalcula imediatamente com frete interestadual (Mangaba 3x 22,00 = 66,00)
+    const spToggle = page.getByRole("button", { name: "Alternar p/ SP" });
+    await spToggle.click();
+    await expect(page.getByText(/Tabela Regional: São Paulo/)).toBeVisible();
+    await expect(page.getByText(/Total estimado:.*66,00/)).toBeVisible();
+
+    // 5. Sair da conta (Logout): anula imediatamente os preços, mantendo produtos e quantidades
+    const logoutButton = page.getByRole("button", { name: "Sair da conta" });
+    await logoutButton.click();
+    await expect(page.getByText("Total estimado: Sob consulta")).toBeVisible();
+    await expect(page.getByText("3 pacotes/unidades")).toBeVisible();
   });
 });

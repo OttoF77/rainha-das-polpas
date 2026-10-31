@@ -21,6 +21,13 @@ export interface WhatsAppCustomerInfo {
   neighborhood?: string;
   paymentMethod?: "Pix" | "Cartão" | "Dinheiro" | string;
   notes?: string;
+  state?: string; // UF validada
+}
+
+export interface WhatsAppRegionalInfo {
+  state: string; // UF (ex: "CE", "SP")
+  stateName?: string; // Ex: "Ceará", "São Paulo"
+  includesRegionalFreight?: boolean;
 }
 
 export interface WhatsAppOrderPayload {
@@ -30,6 +37,7 @@ export interface WhatsAppOrderPayload {
   hasUnpricedItems?: boolean;
   protocol?: string;
   customer?: WhatsAppCustomerInfo;
+  regionalTable?: WhatsAppRegionalInfo;
   // Shorthand fields
   name?: string;
   deliveryMode?: string;
@@ -37,6 +45,7 @@ export interface WhatsAppOrderPayload {
   neighborhood?: string;
   paymentMethod?: string;
   notes?: string;
+  appliedState?: string;
 }
 
 /**
@@ -73,6 +82,7 @@ export function sanitizeWhatsAppMessage(text: string): string {
 
 /**
  * Formats a structured order message adhering to D2C food commerce best practices.
+ * Inlcudes regional price table information when applicable.
  */
 export function formatWhatsAppOrderMessage(payload: WhatsAppOrderPayload): string {
   const protocol = payload.protocol || generateOrderProtocol();
@@ -86,15 +96,25 @@ export function formatWhatsAppOrderMessage(payload: WhatsAppOrderPayload): strin
   const paymentMethod = payload.customer?.paymentMethod || payload.paymentMethod;
   const notes = payload.customer?.notes || payload.notes;
 
+  const regional = payload.regionalTable || (payload.appliedState ? { state: payload.appliedState } : undefined);
+
   const lines: string[] = [
     `Olá! Gostaria de fazer um pedido na Rainha das Polpas (${protocol}):`,
+  ];
+
+  if (regional?.state) {
+    const freightTag = regional.includesRegionalFreight ? " (Frete regional incluso)" : "";
+    lines.push(`Região de Entrega: ${regional.state}${freightTag}`);
+  }
+
+  lines.push(
     "",
     "Itens do Pedido:",
     ...payload.items.map(item => `• ${item.quantity}x ${item.name} (${item.unit || "100g"}): ${item.subtotal === undefined ? "Sob consulta" : formatMoney(item.subtotal)}`),
     "",
     `Total: ${totalItems} pacotes/unidades`,
     `Valor estimado: ${hasUnpriced || estimatedTotal === undefined ? "Sob consulta" : formatMoney(estimatedTotal)}`,
-  ];
+  );
 
   const customerLines: string[] = [];
   if (customerName?.trim()) customerLines.push(`Nome: ${customerName.trim()}`);

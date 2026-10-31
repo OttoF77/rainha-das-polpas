@@ -18,6 +18,7 @@ Este documento registra as tarefas concluídas da baseline e o backlog técnico 
 - [x] **RP-008**: Botão flutuante de WhatsApp com classes de movimento reduzido e ocultação automática quando modais estiverem abertos. (Evidência: `tests/whatsapp.test.ts`).
 - [x] **RP-009**: Portas de integração Sysotto tipadas por slug/host sem `X-Tenant-Id`, com timeout de 3.000 ms e fail-closed na escrita. (Evidência: `tests/sysotto-api.test.ts`).
 - [x] **RP-010**: Compatibilidade de catálogo com a projeção `IndustryCatalog_V1` e fallback transparente para o dataset estático. (Evidência: `tests/sysotto-api.test.ts`).
+- [x] **RP-011**: Precificação regional por estado (UF) exclusiva no carrinho após login e identificação de região (S3-04). Preços ocultos na vitrine/modal; tabelas CE/SP/PI com frete embutido; invalidação no logout; sem `X-Tenant-Id`. (Evidência: `tests/regional-pricing.test.ts`, `tests/storefront.test.tsx`, `e2e/order-flow.spec.ts`).
 - [x] **DOC-MOD-001**: Baseline documental spec-driven com 5 arquivos normativos e diagramas Mermaid. (Evidência: diretório `docs/`).
 
 ---

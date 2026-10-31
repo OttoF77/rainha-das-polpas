@@ -17,10 +17,6 @@ export function ProductDetailModal({ product, onClose, onAddToCart }: ProductDet
   const [quantity, setQuantity] = useState("1");
   const canAdd = validQuantity(Number(quantity));
 
-  const formattedPrice = product.precoUnitario !== undefined
-    ? new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(product.precoUnitario)
-    : "Sob consulta";
-
   return (
     <Modal labelId="modal-product-title" onClose={onClose}>
       <div
@@ -102,14 +98,44 @@ export function ProductDetailModal({ product, onClose, onAddToCart }: ProductDet
 
           <table className="w-full text-sm text-left">
             <caption className="text-left font-bold mb-2">Informações nutricionais</caption>
-            <tbody>{["Valor energético", "Carboidratos", "Proteínas", "Gorduras totais", "Fibras alimentares", "Sódio"].map(label => <tr key={label} className="border-b"><th scope="row" className="py-2 font-medium">{label}</th><td>Consultar rótulo</td></tr>)}</tbody>
+            <tbody>
+              {["Valor energético", "Carboidratos", "Proteínas", "Gorduras totais", "Fibras alimentares", "Sódio"].map(
+                (label) => (
+                  <tr key={label} className="border-b">
+                    <th scope="row" className="py-2 font-medium">
+                      {label}
+                    </th>
+                    <td>Consultar rótulo</td>
+                  </tr>
+                )
+              )}
+            </tbody>
           </table>
           <p className="text-xs">Os valores por porção ainda não foram informados pelo fabricante. Consulte o rótulo da embalagem.</p>
-          <div><h4 className="font-bold">Conservação</h4><p className="text-sm">Mantenha congelado e siga a temperatura, a validade e as instruções indicadas no rótulo da embalagem. Não recongele após descongelar.</p></div>
-          <label className="block text-sm font-bold">Quantidade
-            <input type="number" min={1} max={999} step={1} value={quantity} onChange={event => setQuantity(event.target.value)} className="order-input" aria-invalid={!canAdd} aria-describedby="quantity-help" />
+
+          <div>
+            <h4 className="font-bold">Conservação</h4>
+            <p className="text-sm">
+              Mantenha congelado e siga a temperatura, a validade e as instruções indicadas no rótulo da embalagem. Não recongele após descongelar.
+            </p>
+          </div>
+
+          <label className="block text-sm font-bold">
+            Quantidade
+            <input
+              type="number"
+              min={1}
+              max={999}
+              step={1}
+              value={quantity}
+              onChange={(event) => setQuantity(event.target.value)}
+              className="order-input"
+              aria-invalid={!canAdd}
+              aria-describedby="quantity-help"
+            />
           </label>
           <p id="quantity-help" className="text-xs">Escolha de 1 a 999 pacotes inteiros.</p>
+
           {/* Presentation & Packaging */}
           <div className="bg-gray-50 rounded-2xl p-4 border border-gray-100 flex items-center justify-between">
             <div>
@@ -117,8 +143,7 @@ export function ProductDetailModal({ product, onClose, onAddToCart }: ProductDet
               <span className="text-sm font-bold text-sysotto-navy-dark">{product.unidadePadrao}</span>
             </div>
             <div className="text-right">
-              <span className="block text-xs font-medium text-sysotto-navy-light/70">Preço:</span>
-              <span className="text-lg font-black text-fruit-salad">{formattedPrice}</span>
+              <span className="text-xs text-sysotto-navy-light/70 italic">Tabela de preços exclusiva no carrinho</span>
             </div>
           </div>
         </div>
@@ -140,7 +165,7 @@ export function ProductDetailModal({ product, onClose, onAddToCart }: ProductDet
           )}
 
           <a
-            href={`https://wa.me/5588997099082?text=${encodeURIComponent(`Olá! Gostaria de tirar dúvidas ou pedir ${product.nome}.`)}`}
+            href={`https://wa.me/5588997099082?text=${encodeURIComponent(`Olá! Gostaria de tirar dúvidas sobre a polpa ${product.nome}.`)}`}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-sm font-bold text-white bg-whatsapp hover:bg-whatsapp-hover transition-colors touch-target shadow-xs"

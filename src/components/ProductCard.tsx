@@ -9,10 +9,6 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product, onSelect, onAddToCart }: ProductCardProps) {
-  const formattedPrice = product.precoUnitario !== undefined
-    ? new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(product.precoUnitario)
-    : "Sob consulta";
-
   return (
     <article className="group relative flex flex-col bg-white rounded-2xl overflow-hidden border border-gray-200/80 shadow-xs hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
       {/* Product Image */}
@@ -56,15 +52,8 @@ export function ProductCard({ product, onSelect, onAddToCart }: ProductCardProps
           </p>
         </div>
 
-        {/* Price & Action Buttons */}
-        <div className="pt-3 border-t border-gray-100 space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-sysotto-navy-light/60 font-medium">Preço sugerido:</span>
-            <span className="text-lg font-black text-sysotto-navy-dark">
-              {formattedPrice}
-            </span>
-          </div>
-
+        {/* Action Buttons */}
+        <div className="pt-3 border-t border-gray-100">
           <div className="grid grid-cols-2 gap-2">
             <button
               type="button"

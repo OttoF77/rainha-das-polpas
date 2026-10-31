@@ -8,26 +8,73 @@ import { Modal } from "./Modal";
 import { CartItem } from "./CartItem";
 
 export function CartDrawer({ onClose }: { onClose: () => void }) {
-  const { items, totalItems, estimatedTotal, hasUnpricedItems, clearCart } = useCart();
-  const [name, setName] = useState("");
+  const {
+    items,
+    totalItems,
+    estimatedTotal,
+    hasUnpricedItems,
+    clearCart,
+    user,
+    isAuthenticated,
+    currentAddress,
+    currentUf,
+    pricingStatus,
+    priceTable,
+    pricingMessage,
+    login,
+    logout,
+    setManualUf,
+  } = useCart();
+
+  const [name, setName] = useState(user?.name || "");
   const [deliveryMode, setDeliveryMode] = useState<"Entrega" | "Retirada" | "">("");
-  const [location, setLocation] = useState("");
+  const [location, setLocation] = useState(
+    currentAddress ? `${currentAddress.neighborhood ? currentAddress.neighborhood + ", " : ""}${currentAddress.city} - ${currentUf}` : ""
+  );
   const [paymentMethod, setPaymentMethod] = useState<"Pix" | "Cartão" | "Dinheiro" | "">("");
   const [notes, setNotes] = useState("");
   const [copied, setCopied] = useState(false);
   const [protocol] = useState(() => generateOrderProtocol());
 
+  // Estado para formulário de login no Drawer
+  const [loginEmail, setLoginEmail] = useState("");
+  const [loginError, setLoginError] = useState("");
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+
+  async function handleLoginSubmit(event: React.FormEvent) {
+    event.preventDefault();
+    setLoginError("");
+    setIsLoggingIn(true);
+    try {
+      const res = await login(loginEmail);
+      if (!res.success) {
+        setLoginError(res.message || "Erro ao identificar cliente.");
+      } else {
+        setLoginEmail("");
+      }
+    } finally {
+      setIsLoggingIn(false);
+    }
+  }
+
+  const isPricingActive = pricingStatus === "ACTIVE" && !!priceTable && !hasUnpricedItems;
+
   const message = formatWhatsAppOrderMessage({
     items,
     totalItems,
     estimatedTotal,
-    hasUnpricedItems,
+    hasUnpricedItems: !isPricingActive,
     protocol,
-    name,
+    name: name || user?.name,
     deliveryMode,
     location,
     paymentMethod,
     notes,
+    regionalTable: isPricingActive && priceTable ? {
+      state: priceTable.state,
+      stateName: priceTable.stateName,
+      includesRegionalFreight: priceTable.includesRegionalFreight,
+    } : undefined,
   });
 
   const whatsappUrl = buildWhatsAppUrl(message);
@@ -40,7 +87,6 @@ export function CartDrawer({ onClose }: { onClose: () => void }) {
         setTimeout(() => setCopied(false), 2500);
       }
     } catch {
-      // Fallback
       setCopied(true);
       setTimeout(() => setCopied(false), 2500);
     }
@@ -48,10 +94,17 @@ export function CartDrawer({ onClose }: { onClose: () => void }) {
 
   return (
     <Modal labelId="cart-title" onClose={onClose} drawer>
-      <header className="flex items-center justify-between gap-3 border-b p-5">
-        <h2 id="cart-title" className="text-xl font-bold">
-          Seu Pedido ({totalItems})
-        </h2>
+      <header className="flex items-center justify-between gap-3 border-b p-5 bg-white">
+        <div>
+          <h2 id="cart-title" className="text-xl font-bold text-sysotto-navy-dark">
+            Seu Pedido ({totalItems})
+          </h2>
+          <p className="text-xs text-gray-500">
+            {isAuthenticated
+              ? `Cliente: ${user?.name} (${currentUf || "Sem UF"})`
+              : "Preços calculados pela região de entrega"}
+          </p>
+        </div>
         <button
           type="button"
           className="touch-target rounded-lg p-2 text-gray-500 hover:text-gray-800 focus:outline-hidden focus:ring-2 focus:ring-fern-green"
@@ -62,6 +115,152 @@ export function CartDrawer({ onClose }: { onClose: () => void }) {
         </button>
       </header>
 
+      {/* Painel de Identificação e Tabela Regional */}
+      <section className="bg-gray-50/90 border-b border-gray-200 p-4">
+        {!isAuthenticated ? (
+          <div className="space-y-3">
+            <div className="flex items-start gap-2">
+              <span className="text-amber-600 font-bold text-sm">ℹ</span>
+              <div>
+                <p className="text-xs font-semibold text-gray-800">
+                  Preços por estado liberados após identificação
+                </p>
+                <p className="text-xs text-gray-600">
+                  Entre na sua conta para aplicar a tabela com o frete regional correspondente.
+                </p>
+              </div>
+            </div>
+
+            <form onSubmit={handleLoginSubmit} className="flex gap-2">
+              <input
+                type="email"
+                required
+                value={loginEmail}
+                onChange={(e) => setLoginEmail(e.target.value)}
+                placeholder="Seu e-mail cadastrado"
+                className="order-input text-xs flex-1 py-1.5 px-3"
+                aria-label="E-mail do cliente cadastrado"
+              />
+              <button
+                type="submit"
+                disabled={isLoggingIn}
+                className="px-3 py-1.5 bg-sysotto-navy-dark hover:bg-sysotto-navy-light text-white text-xs font-bold rounded-lg transition-colors disabled:opacity-50"
+              >
+                {isLoggingIn ? "..." : "Entrar"}
+              </button>
+            </form>
+            {loginError && <p className="text-xs text-red-600">{loginError}</p>}
+
+            {/* Atalhos para testes e demonstração */}
+            <div className="pt-2 border-t border-gray-200">
+              <span className="block text-2xs uppercase tracking-wider text-gray-500 font-bold mb-1.5">
+                Simular cliente cadastrado:
+              </span>
+              <div className="flex flex-wrap gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => login("maria.ce@exemplo.com")}
+                  className="px-2 py-1 text-2xs font-semibold bg-white border border-gray-300 rounded-md hover:bg-emerald-50 hover:border-emerald-300 transition-colors"
+                >
+                  Ceará (CE)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => login("carlos.sp@exemplo.com")}
+                  className="px-2 py-1 text-2xs font-semibold bg-white border border-gray-300 rounded-md hover:bg-emerald-50 hover:border-emerald-300 transition-colors"
+                >
+                  São Paulo (SP)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => login("rafael.pi@exemplo.com")}
+                  className="px-2 py-1 text-2xs font-semibold bg-white border border-gray-300 rounded-md hover:bg-emerald-50 hover:border-emerald-300 transition-colors"
+                >
+                  Piauí (PI)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => login("lucas.pendente@exemplo.com")}
+                  className="px-2 py-1 text-2xs font-semibold bg-white border border-gray-300 rounded-md hover:bg-amber-50 hover:border-amber-300 transition-colors"
+                >
+                  Sem Endereço
+                </button>
+                <button
+                  type="button"
+                  onClick={() => login("joana.am@exemplo.com")}
+                  className="px-2 py-1 text-2xs font-semibold bg-white border border-gray-300 rounded-md hover:bg-red-50 hover:border-red-300 transition-colors"
+                >
+                  Amazonas (AM)
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <div>
+                <span className="text-xs font-bold text-sysotto-navy-dark">
+                  {user?.name}
+                </span>
+                <span className="text-xs text-gray-500 ml-1.5">({user?.email})</span>
+              </div>
+              <button
+                type="button"
+                onClick={logout}
+                className="text-xs font-semibold text-red-700 hover:underline"
+              >
+                Sair da conta
+              </button>
+            </div>
+
+            {/* Indicação Clara da Tabela Regional e Status */}
+            {pricingStatus === "ACTIVE" && priceTable && (
+              <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-2.5 flex items-center justify-between">
+                <div>
+                  <span className="block text-xs font-bold text-emerald-900">
+                    Tabela Regional: {priceTable.stateName} ({priceTable.state})
+                  </span>
+                  <span className="block text-2xs text-emerald-700">
+                    {priceTable.notes || "Frete regional/interestadual incluso"}
+                  </span>
+                </div>
+                <div className="flex gap-1">
+                  <button
+                    type="button"
+                    onClick={() => setManualUf(currentUf === "CE" ? "SP" : "CE")}
+                    className="text-2xs font-bold px-2 py-1 bg-white border border-emerald-300 rounded text-emerald-900 hover:bg-emerald-100"
+                    aria-label={`Alternar p/ ${currentUf === "CE" ? "SP" : "CE"}`}
+                  >
+                    Alternar p/ {currentUf === "CE" ? "SP" : "CE"}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {pricingStatus === "NO_ADDRESS" && (
+              <div className="bg-amber-50 border border-amber-200 rounded-xl p-2.5 text-xs text-amber-900">
+                <span className="font-bold block">Atenção: Endereço sem UF cadastrada</span>
+                <span>Complete seu endereço com o estado de entrega para liberar os preços vigentes.</span>
+              </div>
+            )}
+
+            {pricingStatus === "UNSUPPORTED_REGION" && (
+              <div className="bg-rose-50 border border-rose-200 rounded-xl p-2.5 text-xs text-rose-900">
+                <span className="font-bold block">Região não atendida ({currentUf})</span>
+                <span>{pricingMessage || "No momento não atendemos entregas para este estado. Consulte nosso atendimento."}</span>
+              </div>
+            )}
+
+            {pricingStatus === "PRICING_UNAVAILABLE" && (
+              <div className="bg-rose-50 border border-rose-200 rounded-xl p-2.5 text-xs text-rose-900">
+                <span className="font-bold block">Tabela indisponível</span>
+                <span>{pricingMessage || "Erro ao consultar tabela de preços. Os valores serão informados pelo atendimento."}</span>
+              </div>
+            )}
+          </div>
+        )}
+      </section>
+
       <div className="flex-1 overflow-y-auto p-5 space-y-5">
         {items.length === 0 ? (
           <p className="py-12 text-center text-gray-600">
@@ -70,7 +269,7 @@ export function CartDrawer({ onClose }: { onClose: () => void }) {
         ) : (
           <>
             <ul className="space-y-3">
-              {items.map(item => (
+              {items.map((item) => (
                 <CartItem key={item.productId} item={item} />
               ))}
             </ul>
@@ -85,7 +284,7 @@ export function CartDrawer({ onClose }: { onClose: () => void }) {
                   autoComplete="name"
                   maxLength={80}
                   value={name}
-                  onChange={event => setName(event.target.value)}
+                  onChange={(event) => setName(event.target.value)}
                   placeholder="Seu nome completo"
                 />
               </label>
@@ -101,7 +300,7 @@ export function CartDrawer({ onClose }: { onClose: () => void }) {
                       name="deliveryMode"
                       value="Entrega"
                       checked={deliveryMode === "Entrega"}
-                      onChange={event => setDeliveryMode(event.target.value as "Entrega")}
+                      onChange={(event) => setDeliveryMode(event.target.value as "Entrega")}
                       className="text-fern-green focus:ring-fern-green"
                     />
                     Entrega
@@ -112,7 +311,7 @@ export function CartDrawer({ onClose }: { onClose: () => void }) {
                       name="deliveryMode"
                       value="Retirada"
                       checked={deliveryMode === "Retirada"}
-                      onChange={event => setDeliveryMode(event.target.value as "Retirada")}
+                      onChange={(event) => setDeliveryMode(event.target.value as "Retirada")}
                       className="text-fern-green focus:ring-fern-green"
                     />
                     Retirada
@@ -126,7 +325,7 @@ export function CartDrawer({ onClose }: { onClose: () => void }) {
                   className="order-input mt-1"
                   maxLength={120}
                   value={location}
-                  onChange={event => setLocation(event.target.value)}
+                  onChange={(event) => setLocation(event.target.value)}
                   placeholder="Bairro ou endereço para entrega"
                 />
               </label>
@@ -142,7 +341,7 @@ export function CartDrawer({ onClose }: { onClose: () => void }) {
                       name="paymentMethod"
                       value="Pix"
                       checked={paymentMethod === "Pix"}
-                      onChange={event => setPaymentMethod(event.target.value as "Pix")}
+                      onChange={(event) => setPaymentMethod(event.target.value as "Pix")}
                       className="text-fern-green focus:ring-fern-green"
                     />
                     Pix
@@ -153,7 +352,7 @@ export function CartDrawer({ onClose }: { onClose: () => void }) {
                       name="paymentMethod"
                       value="Cartão"
                       checked={paymentMethod === "Cartão"}
-                      onChange={event => setPaymentMethod(event.target.value as "Cartão")}
+                      onChange={(event) => setPaymentMethod(event.target.value as "Cartão")}
                       className="text-fern-green focus:ring-fern-green"
                     />
                     Cartão
@@ -164,7 +363,7 @@ export function CartDrawer({ onClose }: { onClose: () => void }) {
                       name="paymentMethod"
                       value="Dinheiro"
                       checked={paymentMethod === "Dinheiro"}
-                      onChange={event => setPaymentMethod(event.target.value as "Dinheiro")}
+                      onChange={(event) => setPaymentMethod(event.target.value as "Dinheiro")}
                       className="text-fern-green focus:ring-fern-green"
                     />
                     Dinheiro
@@ -179,7 +378,7 @@ export function CartDrawer({ onClose }: { onClose: () => void }) {
                   rows={3}
                   maxLength={300}
                   value={notes}
-                  onChange={event => setNotes(event.target.value)}
+                  onChange={(event) => setNotes(event.target.value)}
                   placeholder="Instruções de entrega ou ponto de referência"
                 />
               </label>
@@ -193,13 +392,27 @@ export function CartDrawer({ onClose }: { onClose: () => void }) {
           <div aria-live="polite">
             <p className="text-sm text-gray-600">{totalItems} pacotes/unidades</p>
             <p className="font-bold text-lg text-sysotto-navy-dark">
-              Total estimado: {hasUnpricedItems ? "Sob consulta" : formatMoney(estimatedTotal ?? 0)}
+              Total estimado:{" "}
+              {isPricingActive && estimatedTotal !== undefined
+                ? formatMoney(estimatedTotal)
+                : "Sob consulta"}
             </p>
+            {isPricingActive && priceTable ? (
+              <p className="text-xs text-emerald-800 font-semibold">
+                ✓ Tabela aplicada: {priceTable.stateName} ({priceTable.state})
+              </p>
+            ) : (
+              <p className="text-xs text-gray-500">
+                {!isAuthenticated
+                  ? "Identifique sua região de entrega para visualizar preços e totais."
+                  : pricingMessage || "Preços sob consulta para o estado selecionado."}
+              </p>
+            )}
           </div>
 
           <div className="flex flex-col gap-2">
             <a
-              className="touch-target w-full rounded-xl bg-fern-green hover:bg-forest-green text-white font-bold p-3 text-center flex items-center justify-center gap-2 transition-colors shadow-sm focus:outline-hidden focus:ring-2 focus:ring-fern-green focus:ring-offset-2"
+              className="touch-target w-full rounded-xl bg-fern-green hover:bg-forest-green text-white font-bold p-3 text-center flex items-center justify-center gap-2 transition-colors shadow-xs focus:outline-hidden focus:ring-2 focus:ring-fern-green focus:ring-offset-2"
               href={whatsappUrl}
               target="_blank"
               rel="noopener noreferrer"

@@ -90,3 +90,17 @@ O storefront DEVE manter compatibilidade com o contrato canônico `IndustryCatal
 
 - **Aceite**: Testes em `tests/sysotto-api.test.ts` validam merge de campos canônicos e fallback imediato sem interrupção de serviço.
 - **Referências Globais**: `IND-001`; `DOC-MOD-001`.
+
+---
+
+### RP-011 — Precificação Regional por Estado (UF) Exclusiva no Carrinho após Login
+Os preços dos produtos, subtotais e valores promocionais DEVEM ser completamente removidos dos cards da vitrine, busca e modal de detalhes nutricionais, inclusive para clientes autenticados. Clientes sem login DEVEM poder montar e preservar seu carrinho com valores sob consulta. A exibição de preços unitários, subtotais por item e total estimado é EXCLUSIVA do carrinho de compras e ocorre somente após o cliente realizar login e o sistema identificar sua região/UF validada.
+1. Diferenças de frete refrigerado entre estados DEVEM ser tratadas por meio da tabela regional definida pelo negócio (ex: Ceará vs São Paulo vs Piauí), evitando dupla contagem de frete.
+2. A UF e tabela regional aplicadas DEVEM ficar explícitas para o cliente no carrinho.
+3. Ao realizar logout, trocar de endereço ou trocar de cliente, os valores anteriores DEVEM ser imediatamente invalidados, preservando produtos e quantidades.
+4. Ausência de endereço, UF não atendida e indisponibilidade de API DEVEM apresentar estados explícitos de "Sob consulta", sem recorrer silenciosamente a preços genéricos.
+5. O resumo do checkout WhatsApp DEVE consumir a mesma tabela regional ativa.
+6. A resolução pública de precificação e autenticação NUNCA deve enviar o cabeçalho `X-Tenant-Id`.
+
+- **Aceite**: Testes em `tests/regional-pricing.test.ts`, `tests/storefront.test.tsx` e `e2e/order-flow.spec.ts` validam 100% dos cenários de catálogo desprovido de preços, liberação exclusiva pós-login, tabelas CE/SP/PI, invalidação imediata no logout, tratamento de UFs não atendidas e ausência de `X-Tenant-Id`.
+- **Referências Globais**: `DOC-MOD-001`; `IND-001`; `IND-005`; `SAL-002`.

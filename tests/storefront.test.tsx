@@ -13,7 +13,7 @@ Object.assign(globalThis, { React, window: dom.window, document: dom.window.docu
 Object.defineProperty(globalThis, "navigator", { value: dom.window.navigator, configurable: true });
 dom.window.HTMLDialogElement.prototype.showModal = function () { this.setAttribute("open", ""); this.querySelector<HTMLElement>("button")?.focus(); };
 dom.window.HTMLDialogElement.prototype.close = function () { this.removeAttribute("open"); };
-const { render, screen, fireEvent, cleanup } = await import("@testing-library/react");
+const { render, screen, fireEvent, cleanup, act } = await import("@testing-library/react");
 const { CartProvider } = await import("../src/contexts/CartContext");
 const { useCart } = await import("../src/hooks/useCart");
 const { ProductGrid } = await import("../src/components/ProductGrid");
@@ -41,7 +41,7 @@ test("renderiza 13 sabores, busca sem acentos e compõe filtros", () => {
   assert.equal(screen.queryAllByRole("article").length, 0);
   assert.ok(screen.getByText(/Nenhum sabor encontrado/));
 });
-test("modal adiciona quantidade e drawer altera, remove, limpa e envia resumo", () => {
+test("modal adiciona quantidade e drawer altera, remove, limpa e envia resumo", async () => {
   render(<CartProvider><Harness unpriced /></CartProvider>);
   const trigger = screen.getByRole("button", { name: "Ver benefícios nutricionais de Polpa de Mangaba" });
   trigger.focus(); fireEvent.click(trigger);
@@ -61,11 +61,35 @@ test("modal adiciona quantidade e drawer altera, remove, limpa e envia resumo", 
   fireEvent.change(screen.getByLabelText("Nome"), { target: { value: "Ana" } });
   const link = screen.getByRole("link", { name: /Finalizar Pedido no WhatsApp|Enviar Pedido pelo WhatsApp/ });
   assert.match(decodeURIComponent(link.getAttribute("href")!), /Nome: Ana/);
-  fireEvent.click(screen.getByRole("button", { name: "Remover Polpa de Acerola" }));
-  fireEvent.click(screen.getByRole("button", { name: "Diminuir quantidade de Polpa de Mangaba" }));
+
+  // Identifica cliente em Ceará (CE) para liberar tabela regional no carrinho
+  await act(async () => {
+    fireEvent.click(screen.getByRole("button", { name: "Ceará (CE)" }));
+  });
+
+  await act(async () => {
+    fireEvent.click(screen.getByRole("button", { name: "Remover Polpa de Acerola" }));
+    fireEvent.click(screen.getByRole("button", { name: "Diminuir quantidade de Polpa de Mangaba" }));
+  });
   assert.match(screen.getByText(/Total estimado:/).textContent!, /33,00/);
-  fireEvent.click(screen.getByRole("button", { name: "Aumentar quantidade de Polpa de Mangaba" }));
+
+  await act(async () => {
+    fireEvent.click(screen.getByRole("button", { name: "Aumentar quantidade de Polpa de Mangaba" }));
+  });
   assert.match(screen.getByText(/Total estimado:/).textContent!, /49,50/);
+
+  // Alterna para tabela de São Paulo (SP): Mangaba 3x 22.00 = 66.00
+  await act(async () => {
+    fireEvent.click(screen.getByRole("button", { name: "Alternar p/ SP" }));
+  });
+  assert.match(screen.getByText(/Total estimado:/).textContent!, /66,00/);
+
+  // Sair da conta invalida imediatamente preços anteriores mantendo itens
+  await act(async () => {
+    fireEvent.click(screen.getByRole("button", { name: "Sair da conta" }));
+  });
+  assert.match(screen.getByText(/Total estimado:/).textContent!, /Sob consulta/);
+
   fireEvent.click(screen.getByRole("button", { name: "Limpar carrinho" }));
   assert.ok(screen.getByText(/Seu carrinho está vazio/));
   fireEvent(screen.getByRole("dialog"), new dom.window.Event("cancel", { bubbles: false, cancelable: true }));
