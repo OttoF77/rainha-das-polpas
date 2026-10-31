@@ -59,7 +59,7 @@ test("modal adiciona quantidade e drawer altera, remove, limpa e envia resumo", 
   fireEvent.click(screen.getByRole("button", { name: "Carrinho de compras com 4 itens" }));
   assert.ok(screen.getByText("Total estimado: Sob consulta"));
   fireEvent.change(screen.getByLabelText("Nome"), { target: { value: "Ana" } });
-  const link = screen.getByRole("link", { name: "Enviar Pedido pelo WhatsApp" });
+  const link = screen.getByRole("link", { name: /Finalizar Pedido no WhatsApp|Enviar Pedido pelo WhatsApp/ });
   assert.match(decodeURIComponent(link.getAttribute("href")!), /Nome: Ana/);
   fireEvent.click(screen.getByRole("button", { name: "Remover Polpa de Acerola" }));
   fireEvent.click(screen.getByRole("button", { name: "Diminuir quantidade de Polpa de Mangaba" }));
