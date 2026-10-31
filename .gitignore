@@ -7,6 +7,8 @@ node_modules/
 coverage/
 TestResults/
 TestResults-local/
+test-results/
+playwright-report/
 
 # Next.js build output
 .next/
