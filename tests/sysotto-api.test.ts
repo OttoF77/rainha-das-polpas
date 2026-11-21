@@ -319,3 +319,60 @@ test("8. Registro de intenção de pedido (Sales): Sucesso e Fail-Closed", async
     process.env.NEXT_PUBLIC_SYSOTTO_API_URL = previousApiUrl;
   }
 });
+
+test("9. Compatibilidade com PublicLandingPageResponse (/api/v1/landing-pages/{slug}) após 404 na rota /public/sites", async () => {
+  const previousApiUrl = process.env.NEXT_PUBLIC_SYSOTTO_API_URL;
+  process.env.NEXT_PUBLIC_SYSOTTO_API_URL = "/sysotto-api";
+
+  try {
+    const requestedUrls: string[] = [];
+    const mockLandingPageFetch = (async (url: string | URL | Request) => {
+      const target = String(url);
+      requestedUrls.push(target);
+
+      if (target === "/sysotto-api/api/v1/public/sites/rainhadaspolpas/catalog") {
+        return new Response("Not Found", { status: 404 });
+      }
+
+      if (target === "/sysotto-api/api/v1/landing-pages/rainhadaspolpas") {
+        return new Response(
+          JSON.stringify({
+            slug: "rainhadaspolpas",
+            content: {
+              sections: [
+                { type: "Hero_V1", title: "Rainha das Polpas" },
+                {
+                  type: "IndustryCatalog_V1",
+                  id: "catalog-1",
+                  isVisible: true,
+                  products: [
+                    {
+                      productId: "mangaba",
+                      name: "Polpa de Mangaba API",
+                      description: "Sincronizada via Sysotto.Api",
+                      unitOfMeasure: "Pacote 1kg (10x100g)",
+                    },
+                  ],
+                },
+              ],
+            },
+          }),
+          { status: 200, headers: { "Content-Type": "application/json" } }
+        );
+      }
+
+      return new Response("Unexpected", { status: 500 });
+    }) as typeof fetch;
+
+    const products = await getCatalogProducts({ fetchFn: mockLandingPageFetch });
+    assert.deepEqual(requestedUrls, [
+      "/sysotto-api/api/v1/public/sites/rainhadaspolpas/catalog",
+      "/sysotto-api/api/v1/landing-pages/rainhadaspolpas",
+    ]);
+    assert.equal(products.length, 1);
+    assert.equal(products[0].nome, "Polpa de Mangaba API");
+    assert.equal(products[0].nomeCientifico, "Hancornia speciosa");
+  } finally {
+    process.env.NEXT_PUBLIC_SYSOTTO_API_URL = previousApiUrl;
+  }
+});

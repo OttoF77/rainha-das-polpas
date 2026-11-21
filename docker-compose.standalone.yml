@@ -1,0 +1,4 @@
+services:
+  rainha-das-polpas-web:
+    networks: !reset
+      - default

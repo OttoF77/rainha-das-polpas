@@ -1,0 +1,42 @@
+services:
+  # --------------------------------------------------------------------------
+  # FRONTEND RAINHA DAS POLPAS - Next.js Static Export + Nginx (Porta 3005)
+  # --------------------------------------------------------------------------
+  rainha-das-polpas-web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-http://localhost:3005}
+        NEXT_PUBLIC_BASE_PATH: ${NEXT_PUBLIC_BASE_PATH:-}
+        NEXT_PUBLIC_SITE_SLUG: ${NEXT_PUBLIC_SITE_SLUG:-rainhadaspolpas}
+        NEXT_PUBLIC_SYSOTTO_API_URL: ${NEXT_PUBLIC_SYSOTTO_API_URL:-/sysotto-api}
+        NEXT_PUBLIC_WHATSAPP_PHONE: ${NEXT_PUBLIC_WHATSAPP_PHONE:-5588997099082}
+    container_name: rainha-das-polpas-web
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-http://localhost:3005}
+      NEXT_PUBLIC_BASE_PATH: ${NEXT_PUBLIC_BASE_PATH:-}
+      NEXT_PUBLIC_SITE_SLUG: ${NEXT_PUBLIC_SITE_SLUG:-rainhadaspolpas}
+      NEXT_PUBLIC_SYSOTTO_API_URL: ${NEXT_PUBLIC_SYSOTTO_API_URL:-/sysotto-api}
+      NEXT_PUBLIC_WHATSAPP_PHONE: ${NEXT_PUBLIC_WHATSAPP_PHONE:-5588997099082}
+      SYSOTTO_API_UPSTREAM: ${SYSOTTO_API_UPSTREAM:-http://sysotto-backend:5036}
+    ports:
+      - "${FRONTEND_PORT:-3005}:3000"
+    networks:
+      - default
+      - sysotto-network
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000/healthz >/dev/null 2>&1 || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+
+networks:
+  default:
+    driver: bridge
+  sysotto-network:
+    name: ${SYSOTTO_DOCKER_NETWORK:-sysotto_sysotto-network}
+    external: true

@@ -44,6 +44,44 @@ function createPublicHeaders(additionalHeaders: Record<string, string> = {}): He
   return headers;
 }
 
+function extractIndustryCatalogSection(data: unknown): IndustryCatalogSectionV1 | null {
+  if (!data || typeof data !== "object") {
+    return null;
+  }
+
+  const record = data as Record<string, unknown>;
+
+  // Accepts either the section directly ({ type: "IndustryCatalog_V1", ... })
+  // or wrapped in a site builder response ({ catalog: ... }, { sections: [...] }, or { content: { sections: [...] } })
+  if (record.type === "IndustryCatalog_V1" && Array.isArray(record.products)) {
+    return record as unknown as IndustryCatalogSectionV1;
+  }
+
+  const catalog = record.catalog as Record<string, unknown> | undefined;
+  if (catalog && catalog.type === "IndustryCatalog_V1" && Array.isArray(catalog.products)) {
+    return catalog as unknown as IndustryCatalogSectionV1;
+  }
+
+  const content = record.content as Record<string, unknown> | undefined;
+  const sections = Array.isArray(record.sections)
+    ? record.sections
+    : Array.isArray(content?.sections)
+      ? content.sections
+      : null;
+
+  if (sections) {
+    const found = sections.find(
+      (s): s is Record<string, unknown> =>
+        Boolean(s && typeof s === "object" && (s as { type?: unknown }).type === "IndustryCatalog_V1")
+    );
+    if (found && Array.isArray(found.products)) {
+      return found as unknown as IndustryCatalogSectionV1;
+    }
+  }
+
+  return null;
+}
+
 /**
  * Fetches the published public catalog projection (IndustryCatalog_V1) for the tenant.
  * Conforms to IND-001/IND-005: Tenant resolution occurs exclusively by slug or Host.
@@ -58,44 +96,36 @@ export async function fetchPublicCatalog(
     return null;
   }
 
-  const endpointUrl = `${baseUrl.replace(/\/+$/, "")}/api/v1/public/sites/${encodeURIComponent(siteSlug)}/catalog`;
+  const cleanBaseUrl = baseUrl.replace(/\/+$/, "");
+  const encodedSlug = encodeURIComponent(siteSlug);
+  const candidateUrls = [
+    `${cleanBaseUrl}/api/v1/public/sites/${encodedSlug}/catalog`,
+    `${cleanBaseUrl}/api/v1/landing-pages/${encodedSlug}`,
+  ];
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
-    const response = await fetchFn(endpointUrl, {
-      method: "GET",
-      headers: createPublicHeaders(),
-      signal: controller.signal,
-    });
+    for (let i = 0; i < candidateUrls.length; i++) {
+      const response = await fetchFn(candidateUrls[i], {
+        method: "GET",
+        headers: createPublicHeaders(),
+        signal: controller.signal,
+      });
 
-    if (!response.ok) {
-      if (!isTestEnv) {
-        console.warn(`[SysottoApi] Falha ao consultar catálogo remoto (${response.status}): fallback local ativado.`);
+      if (response.status === 404 && i < candidateUrls.length - 1) {
+        continue;
       }
-      return null;
-    }
 
-    const data = await response.json();
-    if (!data || typeof data !== "object") {
-      return null;
-    }
-
-    // Accepts either the section directly ({ type: "IndustryCatalog_V1", ... })
-    // or wrapped in a site builder response ({ catalog: ... } or { sections: [...] })
-    if (data.type === "IndustryCatalog_V1" && Array.isArray(data.products)) {
-      return data as IndustryCatalogSectionV1;
-    }
-
-    if (data.catalog && data.catalog.type === "IndustryCatalog_V1" && Array.isArray(data.catalog.products)) {
-      return data.catalog as IndustryCatalogSectionV1;
-    }
-
-    if (Array.isArray(data.sections)) {
-      const found = data.sections.find((s: { type?: string }) => s?.type === "IndustryCatalog_V1");
-      if (found && Array.isArray(found.products)) {
-        return found as IndustryCatalogSectionV1;
+      if (!response.ok) {
+        if (!isTestEnv) {
+          console.warn(`[SysottoApi] Falha ao consultar catálogo remoto (${response.status}): fallback local ativado.`);
+        }
+        return null;
       }
+
+      const data = await response.json();
+      return extractIndustryCatalogSection(data);
     }
 
     return null;

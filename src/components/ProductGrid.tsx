@@ -1,20 +1,43 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { PRODUCTS, Product } from "@/data/products";
 import { ProductCard } from "./ProductCard";
 import { ProductDetailModal } from "./ProductDetailModal";
 import { ProductSearch } from "./ProductSearch";
 import { matchesProductName } from "@/lib/catalog";
+import { getCatalogProducts, getSysottoApiBaseUrl } from "@/services/sysotto-api";
 
 interface ProductGridProps {
   onAddToCart?: (product: Product, quantity?: number) => void;
 }
 
 export function ProductGrid({ onAddToCart }: ProductGridProps) {
+  const [products, setProducts] = useState<Product[]>(PRODUCTS);
   const [search, setSearch] = useState("");
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [activeFilter, setActiveFilter] = useState<string>("todos");
+
+  useEffect(() => {
+    if (!getSysottoApiBaseUrl()) {
+      return;
+    }
+
+    let cancelled = false;
+    getCatalogProducts()
+      .then((remoteProducts) => {
+        if (!cancelled && Array.isArray(remoteProducts) && remoteProducts.length > 0) {
+          setProducts(remoteProducts);
+        }
+      })
+      .catch(() => {
+        // Fallback local já garantido em getCatalogProducts()
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const filterOptions = [
     { id: "todos", label: "Todos os 13 Sabores" },
@@ -23,7 +46,7 @@ export function ProductGrid({ onAddToCart }: ProductGridProps) {
     { id: "digestivo", label: "Digestivas & Funcionais" },
   ];
 
-  const filteredProducts = PRODUCTS.filter((product) => {
+  const filteredProducts = products.filter((product) => {
     if (!matchesProductName(product, search)) return false;
     if (activeFilter === "vitamina-c") {
       return (

@@ -53,6 +53,32 @@ npm test
 npm run build
 ```
 
+## 🐳 Execução Local com Docker (Conectado à Stack Sysotto)
+
+Para executar o frontend em contêiner sem depender de Node.js instalado no host e conectado à rede da stack Sysotto:
+
+```bash
+# 1. Garanta que a stack da Sysotto esteja em execução (rede sysotto_sysotto-network ativa)
+# 2. Builda e sobe o contêiner conectado à rede e à API da Sysotto (porta padrão: 3005)
+./run-docker.sh
+```
+
+O contêiner expõe o proxy reverse same-origin `/sysotto-api/` no Nginx roteando diretamente pela rede Docker interna (`SYSOTTO_DOCKER_NETWORK=sysotto_sysotto-network`) para `SYSOTTO_API_UPSTREAM=http://sysotto-backend:5036`, evitando bloqueios de CORS/CSP e preservando a proibição do cabeçalho `X-Tenant-Id`.
+
+Opções disponíveis no script:
+
+```bash
+./run-docker.sh --build       # Força reconstrução da imagem e sobe o contêiner
+./run-docker.sh --no-build    # Sobe reutilizando a imagem já construída
+./run-docker.sh --standalone  # Sobe de forma isolada sem exigir a rede externa da Sysotto
+./run-docker.sh --logs        # Acompanha os logs do contêiner
+./run-docker.sh --down        # Para e remove o contêiner
+```
+
+Para personalizar variáveis de ambiente (como `FRONTEND_PORT`, `NEXT_PUBLIC_BASE_PATH`, `NEXT_PUBLIC_SITE_SLUG`, `NEXT_PUBLIC_SYSOTTO_API_URL`, `SYSOTTO_DOCKER_NETWORK` ou `SYSOTTO_API_UPSTREAM`), crie um arquivo `.env` a partir de `.env.example` antes de executar `./run-docker.sh`. Por padrão (sem `.env`), o site sobe na raiz `http://localhost:3005/` consumindo `/sysotto-api` -> `http://sysotto-backend:5036`.
+
+> **Observação de integração**: A API local da Sysotto precisa estar saudável na rede compartilhada (`sysotto-backend:5036` ou outro host configurado em `SYSOTTO_API_UPSTREAM`) e expor os endpoints públicos para o slug `rainhadaspolpas` (`/api/v1/public/sites/rainhadaspolpas/catalog` ou `/api/v1/landing-pages/rainhadaspolpas`, além de `leads`, `orders/intent`, `pricing/{uf}` e `customers/auth`).
+
 ## Publicação na Sysotto
 
 O endereço público previsto é `https://sites.sysotto.com/rainhadaspolpas/`, conforme o ADR 002 da Sysotto (emenda de 31/08/2026). Sites de inquilinos usam caminhos sob `sites.sysotto.com`, com resolução do slug pelo publicador compartilhado.
